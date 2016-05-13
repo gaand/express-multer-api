@@ -5,7 +5,7 @@ const models = require('app/models');
 
 const middleware = require('app/middleware');
 
-const multer = middleware['multer'];
+const multer = middleware.multer;
 
 const awsS3Upload = require('lib/aws-s3-upload');
 
@@ -20,11 +20,13 @@ const index = (req, res, next) => {
     .catch(err => next(err));
 };
 
+/*
 const show = (req, res, next) => {
   Upload.findById(req.params.id)
     .then(upload => upload ? res.json({ upload }) : next())
     .catch(err => next(err));
 };
+*/
 
 const extension = (mimetype, filename) =>
   mime.extension(mimetype) ||
@@ -52,6 +54,7 @@ const create = (req, res, next) => {
 
 };
 
+/*
 const update = (req, res, next) => {
   let search = { _id: req.params.id, _owner: req.currentUser._id };
   Upload.findOne(search)
@@ -80,6 +83,7 @@ const destroy = (req, res, next) => {
     })
     .catch(err => next(err));
 };
+*/
 
 module.exports = controller({
   index,
