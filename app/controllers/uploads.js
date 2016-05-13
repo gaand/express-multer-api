@@ -7,6 +7,11 @@ const middleware = require('app/middleware');
 
 const multer = middleware['multer'];
 
+const awsS3Upload = require('lib/aws-s3-upload');
+
+const mime = require('mime-types');
+const path = require('path');
+
 const Upload = models.upload;
 
 const index = (req, res, next) => {
@@ -21,16 +26,28 @@ const show = (req, res, next) => {
     .catch(err => next(err));
 };
 
+const extension = (mimetype, filename) =>
+  mime.extension(mimetype) || path.extname(filename).replace(/^./, '');
+
 const create = (req, res, next) => {
   let upload = {
-    body: req.body,
-    file: req.file,
+    data: req.file.buffer,
+    ext: extension(req.file.mimetype, req.file.originalname),
+    mime: req.file.mimetype,
   };
-  res.json({ upload });
+  awsS3Upload(upload)
+  .then((s3response) => {
+    let upload = {
+      location: s3response.Location,
+      title: req.body.upload.title,
+    };
+    return Upload.create(upload);
+  })
+  .then((upload) => {
+    res.status(201).json({ upload });
+  })
+  .catch(err => next(err));
 
-  // Upload.create(upload)
-  //   .then(upload => res.json({ upload }))
-  //   .catch(err => next(err));
 };
 
 const update = (req, res, next) => {
@@ -60,10 +77,6 @@ const destroy = (req, res, next) => {
         .then(() => res.sendStatus(200));
     })
     .catch(err => next(err));
-};
-
-const noop = (req, res, next) => {
-  next();
 };
 
 module.exports = controller({
