@@ -27,7 +27,9 @@ const show = (req, res, next) => {
 };
 
 const extension = (mimetype, filename) =>
-  mime.extension(mimetype) || path.extname(filename).replace(/^./, '');
+  mime.extension(mimetype) ||
+  (!/\/x-/.test(mimetype) && mimetype.replace('/', '/x-')) ||
+  path.extname(filename).replace(/^./, '');
 
 const create = (req, res, next) => {
   let upload = {
